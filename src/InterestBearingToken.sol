@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
+// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC20/ERC20.sol)
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IVault.sol";
 
-contract InterestBearingToken2 is ERC20, Ownable {
+contract InterestBearingToken is ERC20Burnable, Ownable {
     uint256 public interestRateBPS = 0;
     IVault public vault;
 
@@ -24,28 +25,14 @@ contract InterestBearingToken2 is ERC20, Ownable {
 
     // Event declarations
     event InterestRateChanged(uint256 newRateBPS);
-    event DepositAdded(
-        address indexed account,
-        uint256 amount,
-        uint256 timestamp
-    );
-    event DepositUpdated(
-        address indexed account,
-        uint256 index,
-        uint256 newAmount
-    );
+    event DepositAdded(address indexed account, uint256 amount, uint256 timestamp);
+    event DepositUpdated(address indexed account, uint256 index, uint256 newAmount);
 
-    constructor(address _vault)
-        ERC20("InterestBearingToken", "IBT")
-        Ownable(msg.sender)
-    {
+    constructor(address _vault) ERC20("InterestBearingToken", "IBT") Ownable(msg.sender) {
         vault = IVault(_vault);
-
-        // vault.setToken(address(this));
-        // _mint(address(vault), 1000000 * (10  ** 18)); //Initial rewardBalance
     }
 
-    function mint(address account, uint256 value) external onlyOwner{
+    function mint(address account, uint256 value) external onlyOwner {
         _mint(account, value);
     }
 
@@ -54,28 +41,18 @@ contract InterestBearingToken2 is ERC20, Ownable {
         emit InterestRateChanged(rateBPS);
     }
 
-    function balanceOfWithInterest(address account)
-        public
-        view
-        returns (Balance memory)
-    {
+    function balanceOfWithInterest(address account) public view returns (Balance memory) {
         uint256 principalBalance = super.balanceOf(account);
         uint256 total = principalBalance + accumulatedInterest(account);
 
         return Balance(principalBalance, accumulatedInterest(account), total);
     }
 
-    function accumulatedInterest(address account)
-        public
-        view
-        returns (uint256)
-    {
+    function accumulatedInterest(address account) public view returns (uint256) {
         uint256 totalInterest = 0;
         for (uint256 i = 0; i < deposits[account].length; i++) {
-            uint256 elapsedTime = block.timestamp -
-                deposits[account][i].timestamp;
-            uint256 interest = (((deposits[account][i].amount *
-                interestRateBPS) / 10000) * elapsedTime) / 365 days;
+            uint256 elapsedTime = block.timestamp - deposits[account][i].timestamp;
+            uint256 interest = (((deposits[account][i].amount * interestRateBPS) / 10000) * elapsedTime) / 365 days;
             totalInterest += interest;
         }
         return totalInterest;
@@ -90,32 +67,19 @@ contract InterestBearingToken2 is ERC20, Ownable {
             deposits[msg.sender][i].timestamp = block.timestamp;
         }
 
-        bool ret = vault.redeemFromVault(msg.sender, interest);
-        if (ret) {
-            deposits[msg.sender].push(Deposit(interest, block.timestamp));
-        }
+        vault.redeemFromVault(msg.sender, interest);
     }
 
-    function _update(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override {
+    function _update(address from, address to, uint256 amount) internal override {
         if (from != address(0)) {
             // Update deposits for the sender
             uint256 remaining = amount;
-            for (
-                uint256 i = 0;
-                i < deposits[from].length && remaining > 0;
-                i++
-            ) {
+            for (uint256 i = 0; i < deposits[from].length && remaining > 0; i++) {
                 if (deposits[from][i].amount <= remaining) {
                     remaining -= deposits[from][i].amount;
                     // Remove deposit by replacing it with the last element
                     if (i != deposits[from].length - 1) {
-                        deposits[from][i] = deposits[from][
-                            deposits[from].length - 1
-                        ];
+                        deposits[from][i] = deposits[from][deposits[from].length - 1];
                     }
                     deposits[from].pop();
                     i--; // Recheck the current index, as it now contains the last element.
