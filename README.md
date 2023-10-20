@@ -1,17 +1,15 @@
-## Foundry
+## InterestBearingToken
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+**InterestBearingToken is a token that incentivates users to hold it, as longest time users hold bigger are the rewards.**
 
-Foundry consists of:
+The highlights are:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
+-   **Users can hold/transfer/burn**: All ERC20 standard +burn functions are kept, and user´s actual balance is used to calculate the rewards.
+-   **Configurable APY**: Admin can set APY as many times as is necessary.
+-   **Vault Contract**: This solution was crafted to not need the presence of admin all the time, its just necessary the vault has some balance to pay the rewards.
+-   **Redeable Rewards**: Users can check and withdraw their rewards any time, and automatically this addition to balance starts to get rewards too.
+-   **Foundry**: Foundry was used as framework to craft and build the smartcontracts.
+-   **Unit tests**: A good number of unit tests for different use-cases.
 
 ## Usage
 
@@ -25,42 +23,4 @@ $ forge build
 
 ```shell
 $ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
 ```
